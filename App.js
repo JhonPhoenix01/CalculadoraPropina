@@ -8,9 +8,25 @@ import Resultado from './componentes/Resultado';
 
 export default function App() {
 const [importe,setImporte] = useState('');
-const [personas,setPersonas] = useState('');
-const [propina,setPropina] = useState('');
+const [personas,setPersonas] = useState('1');
+const [propina,setPropina] = useState('10');
 
+const [cargoTip, setCargoTip] =useState('');
+const [tipPerson, setTipPerson] = useState('');
+const [totalAmount, setTotalAmount] = useState('');
+const [amountPerson, setAmountPerson] = useState('');
+
+
+function onLimpiarButtonTaped(){
+  setImporte('');
+  setPersonas('');
+  setPropina('');
+
+  setCargoTip('');
+  setTipPerson('');
+  setTotalAmount('');
+  setAmountPerson('');
+}
 
 
 function importeTextInputHandler (enteredText){
@@ -23,17 +39,38 @@ function propinaTextInputHandler (enteredText){
   setPropina(enteredText);
 }
 
+function OnPercentageButtonTapped (percentage){
+  setPropina(percentage);
+}
+
 function onCalcularButtonTapped(){
   console.log('Importe: ' + importe)
   console.log('Numero de personas: ' + personas)
   console.log('% de propina: ' + propina)
   
-  Number.parseFloat(importe);
-  Number.parseInt(personas);
-  Number.parseFloat(propina);
+  const Import = parseFloat(importe);
+  const Persons = parseInt(personas);
+  const Propin = parseFloat(propina);
 
-  const total= (importe+personas+propina);
+  const ImportePropina = Import * (Propin/100);
+  const ImporteTotal = Import + ImportePropina;
+  const PropinaXPersona = ImportePropina / Persons;
+  const ImporteXPersona = ImporteTotal / Persons;
+
+  const formatoMoneda = new Intl.NumberFormat('es-MX', {
+    style:'currency',
+    currency:'MXN'
+  });
+
+  setCargoTip(formatoMoneda.format(ImportePropina));
+  setTipPerson(formatoMoneda.format(PropinaXPersona));
+  setTotalAmount(formatoMoneda.format(ImporteTotal));
+  setAmountPerson(formatoMoneda.format(ImporteXPersona));
+
+  const total= (Import+Persons+Propin);
   console.log (total)
+
+
 }
 
 
@@ -60,9 +97,15 @@ function onCalcularButtonTapped(){
         <TextInput
           style = {styles.Contenido1}
           onChangeText={personasTextInputHandler}
-          value={personas}
+          value={personas.toString()}
+          keyboardType='decimal-pad'
           placeholder='Ingresa la cantidad de personas'/>
-        <Stepper/>
+        <Stepper
+          minValue="1"
+          maxValue="10"
+          value={personas}
+          onChange={(newValue) => setPersonas(newValue)}
+        />
       </View>
       
       {/* <View style={styles.BotonesPorcentaje}>
@@ -73,17 +116,21 @@ function onCalcularButtonTapped(){
       </View> */}
 
       <View style={styles.BotonesPorcentaje}>
-        <TextButton 
-        title="8%" 
+        <PercentageButton
+        percentage="8" 
+        onPress={OnPercentageButtonTapped}
         buttonStyle={styles.percentageButtonStyle}/>
-        <TextButton 
-        title="10%" 
+        <PercentageButton
+        percentage="10" 
+        onPress={OnPercentageButtonTapped}
         buttonStyle={styles.percentageButtonStyle}/>
-        <TextButton 
-        title="12.5%" 
+        <PercentageButton
+        percentage="12.5" 
+        onPress={OnPercentageButtonTapped}
         buttonStyle={styles.percentageButtonStyle}/>
-        <TextButton 
-        title="15%" 
+        <PercentageButton
+        percentage="15" 
+        onPress={OnPercentageButtonTapped}
         buttonStyle={styles.percentageButtonStyle}/>
       </View>
 
@@ -92,38 +139,44 @@ function onCalcularButtonTapped(){
         <TextInput
           style = {styles.Contenido1}
           onChangeText={propinaTextInputHandler}
-          value={propina}
+          value={propina.toString()}
+          keyboardType='decimal-pad'
           placeholder='Ingresa el % de propina'/>
-        <Stepper />
+        <Stepper 
+      
+        maxValue="20"
+        value={propina}
+        onChange={(newValue) => setPropina(newValue)}
+        />
       </View>
+
     </View>
 
     <View style={styles.commandContainer}>
       <TextButton 
-
         title='Calcular'
         onPress={onCalcularButtonTapped}
-
         buttonStyle={{backgroundColor:'blue', borderColor:'blue'}}
         textStyle={{color:'yellow'}}/>
-        
-      <TextButton title='Limpiar'/>
+      
+      <TextButton title='Limpiar'
+      onPress={onLimpiarButtonTaped}/>
     </View>
 
 
     <View style={styles.resultContainer}>
         <Resultado
         descripcion="Importe de la propina"
-        valor="156.25"/>
+        valor={cargoTip}/>
         <Resultado
         descripcion="Propina por persona"
-        valor="39.06"/>
+        valor={tipPerson}/>
         <Resultado
         descripcion="Importe total"
-        valor="1406.25"/>
+        valor={totalAmount}/>
         <Resultado
         descripcion="importe por persona"
-        valor="351.56"/>
+        valor={amountPerson}/>
     </View>
 
   </View>
@@ -184,10 +237,6 @@ const styles = StyleSheet.create({
     justifyContent:'space-evenly',
     gap:32
   },
-  percentageButtonStyle:{
-    minWidth:70,
-    alignItems:'center'
-},
 resultContainer:{
   backgroundColor:'lightgray',
   borderColor:'black',
